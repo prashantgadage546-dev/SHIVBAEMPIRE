@@ -1,0 +1,165 @@
+# =============================================================
+# SHIVBAEMPIRE — GitHub Actions CI/CD Pipeline
+# =============================================================
+
+name: SHIVBAEMPIRE CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ============================================================
+  # CI — Test & Build
+  # ============================================================
+  ci:
+    name: CI — Test & Build
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test_root_pass
+          MYSQL_DATABASE: shivbaempire_test
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_pass
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
+
+      # ---- Frontend ----
+      - name: Install frontend dependencies
+        run: npm ci --legacy-peer-deps
+        working-directory: ./frontend
+
+      - name: Lint frontend
+        run: npm run lint --if-present
+        working-directory: ./frontend
+        continue-on-error: true
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: ./frontend
+
+      # ---- Backend ----
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: ./backend
+
+      - name: Run database migrations (test DB)
+        env:
+          NODE_ENV: test
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_NAME: shivbaempire_test
+          DB_USER: test_user
+          DB_PASSWORD: test_pass
+          JWT_SECRET: test_jwt_secret_minimum_32_characters_long
+        run: node src/utils/migrate.js
+        working-directory: ./backend
+
+      - name: Run backend tests
+        env:
+          NODE_ENV: test
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_NAME: shivbaempire_test
+          DB_USER: test_user
+          DB_PASSWORD: test_pass
+          JWT_SECRET: test_jwt_secret_minimum_32_characters_long
+          PORT: 5000
+        run: npm test
+        working-directory: ./backend
+
+      # ---- Docker build validation ----
+      - name: Validate Docker build (frontend)
+        run: docker build -t shivbaempire-frontend:test ./frontend
+
+      - name: Validate Docker build (backend)
+        run: docker build -t shivbaempire-backend:test ./backend
+
+  # ============================================================
+  # CD — Deploy to VPS (only on push to main)
+  # ============================================================
+  deploy:
+    name: CD — Deploy to Production VPS
+    needs: ci
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -e
+            echo "=== SHIVBAEMPIRE Deployment Started ==="
+
+            # Navigate to project directory
+            cd /opt/shivbaempire
+
+            # Pull latest code (NEVER overwrites .env)
+            git pull origin main
+
+            echo "=== Running database migrations (safe - no DROP) ==="
+            docker compose exec -T backend node src/utils/migrate.js || \
+              docker compose run --rm backend node src/utils/migrate.js
+
+            echo "=== Building and updating containers ==="
+            docker compose build --no-cache frontend backend
+
+            echo "=== Rolling update (keeps MySQL running) ==="
+            docker compose up -d --no-deps frontend backend nginx
+
+            echo "=== Waiting for backend health check ==="
+            sleep 15
+            for i in {1..10}; do
+              if curl -sf http://localhost:5000/api/health > /dev/null; then
+                echo "Backend is healthy!"
+                break
+              fi
+              echo "Waiting... ($i/10)"
+              sleep 5
+            done
+
+            echo "=== Verifying deployment ==="
+            curl -sf http://localhost/api/health || (echo "DEPLOYMENT FAILED - Health check failed" && exit 1)
+
+            echo "=== Cleaning up old images ==="
+            docker image prune -f
+
+            echo "=== Deployment successful! ==="
+
+      - name: Notify deployment success
+        if: success()
+        run: echo "✅ SHIVBAEMPIRE deployed successfully to production!"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: echo "❌ SHIVBAEMPIRE deployment FAILED. Check logs."
