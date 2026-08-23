@@ -22,7 +22,7 @@ const dbConfig = {
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
-  ssl: (process.env.DB_SSL === 'true' || (process.env.DB_HOST && process.env.DB_HOST.includes('tidbcloud.com')))
+  ssl: (process.env.DB_SSL === 'true' || !process.env.DB_HOST || (process.env.DB_HOST && process.env.DB_HOST.includes('tidbcloud.com')))
     ? { minVersion: 'TLSv1.2', rejectUnauthorized: false }
     : undefined,
   timezone: '+05:30',
@@ -31,7 +31,7 @@ const dbConfig = {
 
 const realPool = mysql.createPool(dbConfig);
 
-const sqlitePath = path.join(__dirname, '../../../database/shivbaempire.sqlite');
+const sqlitePath = path.join(__dirname, '../../database/shivbaempire.sqlite');
 
 function initSQLite() {
   const dbDir = path.dirname(sqlitePath);
