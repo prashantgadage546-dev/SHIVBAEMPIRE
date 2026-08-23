@@ -288,7 +288,20 @@ const testConnection = async () => {
 const pool = {
   execute: (sql, params = []) => {
     if (!useSQLite) {
-      return realPool.execute(sql, params).catch(err => {
+      let finalSql = sql;
+      let finalParams = [...params];
+
+      // Fix TiDB / MySQL prepared statement protocol error with LIMIT ? OFFSET ?
+      if (/LIMIT\s+\?\s+OFFSET\s+\?/i.test(finalSql) && finalParams.length >= 2) {
+        const offsetVal = Math.max(0, parseInt(finalParams.pop()) || 0);
+        const limitVal = Math.max(1, parseInt(finalParams.pop()) || 20);
+        finalSql = finalSql.replace(/LIMIT\s+\?\s+OFFSET\s+\?/i, `LIMIT ${limitVal} OFFSET ${offsetVal}`);
+      } else if (/LIMIT\s+\?/i.test(finalSql) && finalParams.length >= 1) {
+        const limitVal = Math.max(1, parseInt(finalParams.pop()) || 20);
+        finalSql = finalSql.replace(/LIMIT\s+\?/i, `LIMIT ${limitVal}`);
+      }
+
+      return realPool.execute(finalSql, finalParams).catch(err => {
         if (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND') {
           useSQLite = true;
           initSQLite();
