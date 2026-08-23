@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS `donors` (
   KEY `idx_donors_village_id` (`village_id`),
   KEY `idx_donors_event_id` (`event_id`),
   KEY `idx_donors_created_by` (`created_by`),
-  FULLTEXT KEY `ft_donors_search` (`full_name`, `mobile`, `village_name`),
+  KEY `idx_donors_search` (`full_name`),
   CONSTRAINT `fk_donors_village_id` FOREIGN KEY (`village_id`) REFERENCES `villages` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_donors_event_id` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_donors_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL

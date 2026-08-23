@@ -12,16 +12,19 @@ let useSQLite = false;
 let sqliteDb = null;
 
 const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT) || 3306,
+  host: process.env.DB_HOST || 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com',
+  port: parseInt(process.env.DB_PORT) || 4000,
   database: process.env.DB_NAME || 'shivbaempire',
-  user: process.env.DB_USER || 'shivba_user',
-  password: process.env.DB_PASSWORD || '',
+  user: process.env.DB_USER || '2sEaQneLB27DyZf.root',
+  password: process.env.DB_PASSWORD || '4YLchPbelL9eVQ7Q',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
+  ssl: (process.env.DB_SSL === 'true' || (process.env.DB_HOST && process.env.DB_HOST.includes('tidbcloud.com')))
+    ? { minVersion: 'TLSv1.2', rejectUnauthorized: false }
+    : undefined,
   timezone: '+05:30',
   charset: 'utf8mb4',
 };
