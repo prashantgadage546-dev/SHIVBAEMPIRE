@@ -1,0 +1,49 @@
+# =============================================================
+# SHIVBAEMPIRE — Render.com Deployment Configuration
+# =============================================================
+
+services:
+  # ---- Backend API (Web Service - Docker) ----
+  - type: web
+    name: shivbaempire-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DB_HOST
+        value: gateway01.ap-southeast-1.prod.aws.tidbcloud.com
+      - key: DB_PORT
+        value: 4000
+      - key: DB_NAME
+        value: shivbaempire
+      - key: DB_USER
+        value: 2sEaQneLB27DyZf.root
+      - key: DB_PASSWORD
+        value: 4YLchPbelL9eVQ7Q
+      - key: DB_SSL
+        value: true
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: JWT_SECRET
+        value: shivbaempire_dev_jwt_secret_key_minimum_32_chars_2026
+
+  # ---- Frontend (Static Site - Vite Build) ----
+  - type: web
+    name: shivbaempire-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    plan: free
+    envVars:
+      - key: VITE_API_URL
+        value: https://shivbaempire.onrender.com/api
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
