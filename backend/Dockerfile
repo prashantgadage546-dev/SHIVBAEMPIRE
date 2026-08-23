@@ -8,8 +8,8 @@ RUN npm install --omit=dev
 
 COPY . .
 
-# Create log directory
-RUN mkdir -p /var/log/shivbaempire
+# Create log and database directories with permissions
+RUN mkdir -p /app/database /var/log/shivbaempire && chown -R node:node /app /var/log/shivbaempire
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \

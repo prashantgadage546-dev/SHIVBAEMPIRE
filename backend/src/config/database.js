@@ -31,7 +31,9 @@ const dbConfig = {
 
 const realPool = mysql.createPool(dbConfig);
 
-const sqlitePath = path.join(__dirname, '../../database/shivbaempire.sqlite');
+const sqlitePath = process.env.NODE_ENV === 'production'
+  ? path.join('/tmp', 'shivbaempire.sqlite')
+  : path.join(__dirname, '../../database/shivbaempire.sqlite');
 
 function initSQLite() {
   const dbDir = path.dirname(sqlitePath);
@@ -278,6 +280,7 @@ const testConnection = async () => {
     logger.info('✅ MySQL database connected successfully.');
     connection.release();
   } catch (error) {
+    logger.error('❌ MySQL/TiDB Connection Error:', error);
     useSQLite = true;
     logger.warn('ℹ️ Local MySQL server not active. Operating on persistent local SQLite database file: ' + sqlitePath);
     initSQLite();

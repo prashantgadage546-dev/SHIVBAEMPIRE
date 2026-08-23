@@ -9,11 +9,14 @@ RUN npm install --omit=dev
 
 COPY backend/ .
 
-RUN mkdir -p /var/log/shivbaempire
+# Create log and database directories with permissions
+RUN mkdir -p /app/database /var/log/shivbaempire && chown -R node:node /app /var/log/shivbaempire
 
 EXPOSE 5000
 
 ENV NODE_ENV=production
 ENV PORT=5000
+
+USER node
 
 CMD ["node", "src/index.js"]
