@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS `receipts` (
   `donor_id` INT UNSIGNED NOT NULL,
   `amount` DECIMAL(12,2) NOT NULL,
   `amount_in_words` VARCHAR(500) DEFAULT NULL,
-  `payment_mode` ENUM('CASH', 'UPI', 'BANK_TRANSFER', 'OTHER') NOT NULL,
+  `payment_mode` VARCHAR(30) NOT NULL DEFAULT 'CASH',
   `transaction_id` VARCHAR(100) DEFAULT NULL,
   `collection_date` DATE NOT NULL,
   `collector_id` INT UNSIGNED DEFAULT NULL,
