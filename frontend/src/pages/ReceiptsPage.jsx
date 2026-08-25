@@ -11,7 +11,23 @@ export default function ReceiptsPage() {
   const [pagination, setPagination] = useState({ page: 1, total: 0, pages: 1 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [previewReceipt, setPreviewReceipt] = useState(null);
+  const downloadPdf = async (receiptId, receiptNumber) => {
+    try {
+      const response = await api.get(`/receipts/${receiptId}/pdf`, {
+        responseType: 'blob',
+      });
+      const blobUrl = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `receipt-${receiptNumber}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    } catch {
+      alert('Failed to download receipt PDF.');
+    }
+  };
 
   const fetchReceipts = useCallback(async (page = 1, q = search) => {
     setLoading(true);
@@ -92,14 +108,13 @@ export default function ReceiptsPage() {
                       >
                         <Eye size={14} />
                       </a>
-                      <a
-                        href={`/api/receipts/${r.id}/pdf`}
-                        target="_blank" rel="noopener noreferrer"
+                      <button
+                        onClick={() => downloadPdf(r.id, r.receipt_number)}
                         className="p-1.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100"
                         title="Download PDF"
                       >
                         <Download size={14} />
-                      </a>
+                      </button>
                       {r.donor_mobile && (
                         <a
                           href={generateWhatsAppUrl(r.donor_mobile, generateReceiptWhatsAppMessage({
