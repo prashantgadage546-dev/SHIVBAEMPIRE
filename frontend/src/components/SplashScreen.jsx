@@ -32,10 +32,12 @@ export default function SplashScreen({ onFinish }) {
       <div className="relative z-10 flex flex-col items-center text-center px-6">
         {/* Animated Emblem */}
         <div className="relative mb-6">
-          <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-amber-600 via-orange-500 to-amber-400 p-0.5 shadow-2xl shadow-orange-500/30 animate-bounce">
-            <div className="w-full h-full bg-gray-950 rounded-2xl flex items-center justify-center">
-              <Flame size={48} className="text-amber-400 animate-pulse" />
-            </div>
+          <div className="w-28 h-28 rounded-2xl bg-gradient-to-tr from-amber-600 via-orange-500 to-amber-400 p-1 shadow-2xl shadow-orange-500/40">
+            <img
+              src="/logo.png"
+              alt="Shivba Empire Emblem"
+              className="w-full h-full object-cover rounded-xl border border-amber-400/30"
+            />
           </div>
           <Sparkles size={20} className="absolute -top-2 -right-2 text-amber-300 animate-spin" />
         </div>

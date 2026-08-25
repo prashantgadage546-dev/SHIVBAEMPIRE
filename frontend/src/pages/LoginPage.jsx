@@ -38,9 +38,16 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex">
       {/* Left panel — branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-gray-900 flex-col justify-between p-12">
-        <div>
-          <div className="text-white font-bold text-3xl tracking-tight">SHIVBAEMPIRE</div>
-          <div className="text-gray-400 text-sm mt-1">Shivba Tarun Mitra Mandal</div>
+        <div className="flex items-center gap-4">
+          <img
+            src="/logo.png"
+            alt="Shivba Empire Logo"
+            className="w-14 h-14 object-contain rounded-xl shadow-lg border border-amber-500/40 bg-black/40"
+          />
+          <div>
+            <div className="text-white font-bold text-3xl tracking-tight">SHIVBAEMPIRE</div>
+            <div className="text-gray-400 text-sm mt-0.5">Shivba Tarun Mitra Mandal</div>
+          </div>
         </div>
 
         <div className="space-y-6">
@@ -72,7 +79,12 @@ export default function LoginPage() {
       {/* Right panel — login form */}
       <div className="flex-1 flex flex-col items-center justify-center p-6">
         {/* Mobile brand */}
-        <div className="lg:hidden text-center mb-8">
+        <div className="lg:hidden text-center mb-8 flex flex-col items-center">
+          <img
+            src="/logo.png"
+            alt="Shivba Empire Logo"
+            className="w-16 h-16 object-contain rounded-xl shadow-lg border border-amber-500/40 bg-black/40 mb-3"
+          />
           <div className="text-gray-900 font-bold text-2xl">SHIVBAEMPIRE</div>
           <div className="text-gray-500 text-sm">Shivba Tarun Mitra Mandal</div>
         </div>

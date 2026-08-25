@@ -30,10 +30,17 @@ export default function Sidebar({ mobile = false, onClose }) {
   return (
     <aside className={`sidebar h-full flex flex-col ${mobile ? 'w-full' : 'w-64'}`}>
       {/* Brand */}
-      <div className="px-5 py-6 border-b border-white/10 flex items-center justify-between">
-        <div>
-          <div className="text-white font-bold text-xl tracking-tight">{t('brandName')}</div>
-          <div className="text-gray-400 text-xs mt-0.5 leading-tight">{t('orgSubtitle')}</div>
+      <div className="px-5 py-5 border-b border-white/10 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <img
+            src="/logo.png"
+            alt="Shivba Empire Logo"
+            className="w-10 h-10 object-contain rounded-lg shadow-md border border-amber-500/30 bg-black/40"
+          />
+          <div>
+            <div className="text-white font-bold text-lg tracking-tight leading-tight">{t('brandName')}</div>
+            <div className="text-gray-400 text-[11px] mt-0.5 leading-tight">{t('orgSubtitle')}</div>
+          </div>
         </div>
         {mobile && (
           <button onClick={onClose} className="text-gray-400 hover:text-white">
