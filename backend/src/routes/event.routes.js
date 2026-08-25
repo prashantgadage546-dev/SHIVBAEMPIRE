@@ -94,20 +94,47 @@ router.put('/:id', authenticate, requireAdmin, async (req, res, next) => {
   }
 });
 
-// DELETE /api/events/:id
+// DELETE /api/events/:id  — cascade deletes collections & receipts
 router.delete('/:id', authenticate, requireAdmin, async (req, res, next) => {
+  const connection = await pool.getConnection();
   try {
-    const [existing] = await pool.execute('SELECT * FROM events WHERE id = ?', [req.params.id]);
-    if (existing.length === 0) return res.status(404).json({ success: false, message: 'Event not found.' });
+    await connection.beginTransaction();
 
-    const [collections] = await pool.execute('SELECT COUNT(*) as cnt FROM collections WHERE event_id = ?', [req.params.id]);
-    if (collections[0].cnt > 0) {
-      return res.status(400).json({ success: false, message: 'Cannot delete event with existing collections.' });
+    const [existing] = await connection.execute('SELECT * FROM events WHERE id = ?', [req.params.id]);
+    if (existing.length === 0) {
+      await connection.rollback();
+      connection.release();
+      return res.status(404).json({ success: false, message: 'Event not found.' });
     }
 
-    await pool.execute('DELETE FROM events WHERE id = ?', [req.params.id]);
-    res.json({ success: true, message: 'Event deleted.' });
+    // Get all collection IDs for this event to delete their receipts
+    const [cols] = await connection.execute('SELECT receipt_id FROM collections WHERE event_id = ?', [req.params.id]);
+    const receiptIds = cols.map(c => c.receipt_id).filter(Boolean);
+
+    // Delete receipts linked to this event's collections
+    if (receiptIds.length > 0) {
+      await connection.execute(
+        `DELETE FROM receipts WHERE id IN (${receiptIds.map(() => '?').join(',')})`,
+        receiptIds
+      );
+    }
+
+    // Delete collections for this event
+    await connection.execute('DELETE FROM collections WHERE event_id = ?', [req.params.id]);
+
+    // Delete donors linked only to this event
+    await connection.execute('DELETE FROM donors WHERE event_id = ?', [req.params.id]);
+
+    // Finally delete the event
+    await connection.execute('DELETE FROM events WHERE id = ?', [req.params.id]);
+
+    await connection.commit();
+    connection.release();
+
+    res.json({ success: true, message: 'Event आणि सर्व संबंधित data delete झाला.' });
   } catch (err) {
+    await connection.rollback();
+    connection.release();
     next(err);
   }
 });

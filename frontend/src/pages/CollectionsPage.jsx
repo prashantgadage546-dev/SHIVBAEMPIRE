@@ -228,14 +228,23 @@ export default function CollectionsPage() {
     }
   };
 
-  const downloadPdf = (receiptId, receiptNumber) => {
-    const token = localStorage.getItem('shivba_token');
-    const url = `/api/receipts/${receiptId}/pdf`;
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `receipt-${receiptNumber}.pdf`;
-    // Need auth header — open in new tab for simplicity (pdf endpoint uses auth)
-    window.open(`${url}?token=${token}`, '_blank');
+  const downloadPdf = async (receiptId, receiptNumber) => {
+    try {
+      toast.info?.('Receipt डाउनलोड होत आहे...');
+      const response = await api.get(`/receipts/${receiptId}/pdf`, {
+        responseType: 'blob',
+      });
+      const blobUrl = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `receipt-${receiptNumber}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    } catch (err) {
+      toast.error('Receipt डाउनलोड करता आली नाही. पुन्हा प्रयत्न करा.');
+    }
   };
 
   return (

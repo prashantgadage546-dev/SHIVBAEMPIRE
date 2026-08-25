@@ -13,7 +13,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useEvent } from '../context/EventContext';
 
 // ---- Add/Edit Donor Modal ----
-function DonorModal({ donor, events, onClose, onSaved }) {
+function DonorModal({ donor, events, selectedEventId, onClose, onSaved }) {
   const [form, setForm] = useState({
     full_name: donor?.full_name || '',
     mobile: donor?.mobile || '',
@@ -23,7 +23,7 @@ function DonorModal({ donor, events, onClose, onSaved }) {
     expected_donation: donor?.expected_donation || '',
     payment_mode: 'CASH',
     notes: donor?.notes || '',
-    event_id: donor?.event_id || events[0]?.id || '',
+    event_id: donor?.event_id || selectedEventId || events[0]?.id || '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -164,10 +164,21 @@ function DonorModal({ donor, events, onClose, onSaved }) {
             {!donor && (
               <div className="col-span-2">
                 <label className="form-label">{t('event')} *</label>
-                <select className="form-input" value={form.event_id} onChange={e => setForm(f => ({...f, event_id: e.target.value}))} required>
-                  <option value="">Select Event</option>
-                  {events.map(ev => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
-                </select>
+                {events.length === 0 ? (
+                  <div className="form-input bg-amber-50 border-amber-300 text-amber-700 text-sm">
+                    ⚠️ कोणताही Event सापडला नाही — आधी Event तयार करा.
+                  </div>
+                ) : (
+                  <select
+                    className="form-input"
+                    value={form.event_id}
+                    onChange={e => setForm(f => ({...f, event_id: e.target.value}))}
+                    required
+                  >
+                    <option value="">-- Event निवडा --</option>
+                    {events.map(ev => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
+                  </select>
+                )}
               </div>
             )}
           </div>
@@ -347,6 +358,7 @@ export default function DonorsPage() {
         <DonorModal
           donor={modal === 'add' ? null : modal}
           events={events}
+          selectedEventId={selectedEventId}
           onClose={() => setModal(null)}
           onSaved={(savedEventId) => {
             setModal(null);

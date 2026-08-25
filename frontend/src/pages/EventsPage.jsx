@@ -2,7 +2,7 @@
 // SHIVBAEMPIRE — Events Page (Admin)
 // =============================================================
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Edit2, X, Zap } from 'lucide-react';
+import { Plus, Edit2, X, Zap, Trash2, AlertTriangle } from 'lucide-react';
 import api from '../services/api';
 import { formatCurrency, formatDate, getErrorMessage } from '../utils/helpers';
 import { useEvent } from '../context/EventContext';
@@ -86,6 +86,8 @@ export default function EventsPage() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [deletePassword, setDeletePassword] = useState('');
   const toast = useToast();
 
   const fetchEvents = useCallback(async () => {
@@ -109,6 +111,19 @@ export default function EventsPage() {
       fetchEvents();
       refreshGlobalEvents();
     } catch (err) { toast.error(getErrorMessage(err)); }
+  };
+
+  const handleDelete = async (eventId) => {
+    try {
+      await api.delete(`/events/${eventId}`);
+      toast.success('Event delete झाला.');
+      setDeleteConfirm(null);
+      fetchEvents();
+      refreshGlobalEvents();
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+      setDeleteConfirm(null);
+    }
   };
 
   const statusColors = {
@@ -169,6 +184,9 @@ export default function EventsPage() {
               {!ev.is_active && (
                 <button onClick={() => setActiveEvent(ev.id)} className="btn btn-primary btn-sm flex-1"><Zap size={12} /> Set Active</button>
               )}
+              <button onClick={() => setDeleteConfirm(ev)} className="btn btn-danger btn-sm" title="Delete Event">
+                <Trash2 size={12} />
+              </button>
             </div>
           </div>
         ))}
@@ -176,6 +194,56 @@ export default function EventsPage() {
 
       {(modal === 'add' || (modal && modal.id)) && (
         <EventModal event={modal === 'add' ? null : modal} onClose={() => setModal(null)} onSaved={() => { setModal(null); fetchEvents(); }} />
+      )}
+
+      {deleteConfirm && (
+        <div className="modal-overlay">
+          <div className="modal-content max-w-sm p-6 text-center">
+            <AlertTriangle size={40} className="text-red-500 mx-auto mb-4" />
+            <h3 className="font-semibold text-gray-900">Event Delete करायचा का?</h3>
+            <p className="text-gray-500 text-sm mt-2">
+              <strong>"{deleteConfirm.name}"</strong> हा event कायमचा delete होईल.
+            </p>
+            {(deleteConfirm.donor_count > 0 || parseFloat(deleteConfirm.total_collected) > 0) && (
+              <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-left">
+                <p className="text-red-700 text-xs font-semibold mb-1">⚠️ खालील data पण delete होईल:</p>
+                <ul className="text-red-600 text-xs space-y-0.5 list-disc list-inside">
+                  {deleteConfirm.donor_count > 0 && <li>{deleteConfirm.donor_count} donors</li>}
+                  {parseFloat(deleteConfirm.total_collected) > 0 && <li>सर्व collections व receipts</li>}
+                </ul>
+              </div>
+            )}
+            <div className="mt-4 text-left">
+              <label className="text-xs font-semibold text-gray-600 block mb-1">🔐 Delete confirm करण्यासाठी password टाका:</label>
+              <input
+                type="password"
+                className="form-input text-center text-lg tracking-widest"
+                placeholder="••••"
+                value={deletePassword}
+                onChange={e => setDeletePassword(e.target.value)}
+                autoFocus
+              />
+              {deletePassword.length > 0 && deletePassword !== '45' && (
+                <p className="text-red-500 text-xs mt-1">❌ चुकीचा password</p>
+              )}
+              {deletePassword === '45' && (
+                <p className="text-green-600 text-xs mt-1">✅ Password बरोबर आहे</p>
+              )}
+            </div>
+            <div className="flex gap-3 mt-4 justify-center">
+              <button
+                onClick={() => { setDeleteConfirm(null); setDeletePassword(''); }}
+                className="btn btn-secondary"
+              >Cancel</button>
+              <button
+                onClick={() => { handleDelete(deleteConfirm.id); setDeletePassword(''); }}
+                className="btn btn-danger"
+                disabled={deletePassword !== '45'}
+                style={{ opacity: deletePassword !== '45' ? 0.4 : 1 }}
+              >Delete करा</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

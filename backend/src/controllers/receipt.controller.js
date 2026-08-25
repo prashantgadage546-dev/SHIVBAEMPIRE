@@ -152,119 +152,192 @@ const downloadReceiptPdf = async (req, res, next) => {
     }
 
     const receipt = receipts[0];
-    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const doc = new PDFDocument({ size: 'A4', margin: 0 });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=receipt-${receipt.receipt_number}.pdf`);
-
     doc.pipe(res);
 
-    // ---- PDF Design ----
-    const primaryColor = '#1F2937';
-    const accentColor = '#374151';
-    const borderColor = '#E5E7EB';
+    const W = doc.page.width;   // 595
+    const H = doc.page.height;  // 842
 
-    // Header background
-    doc.rect(0, 0, doc.page.width, 130).fill('#F8F9FA');
+    // ── COLORS ───────────────────────────────────────────────
+    const saffron   = '#FF6B00';
+    const darkBlue  = '#1A237E';
+    const gold      = '#F9A825';
+    const lightGray = '#F5F5F5';
+    const midGray   = '#E0E0E0';
+    const textDark  = '#212121';
+    const textGray  = '#616161';
+    const white     = '#FFFFFF';
 
-    // Organization name
-    doc.font('Helvetica-Bold').fontSize(22).fillColor(primaryColor)
-      .text('SHIVBAEMPIRE', 50, 40, { align: 'center' });
+    // ── HEADER BACKGROUND ────────────────────────────────────
+    // Saffron gradient-like header
+    doc.rect(0, 0, W, 130).fill(saffron);
+    // Gold accent strip at bottom of header
+    doc.rect(0, 122, W, 8).fill(gold);
 
-    doc.font('Helvetica').fontSize(11).fillColor(accentColor)
-      .text('Shivba Tarun Mitra Mandal', { align: 'center' });
+    // Org name
+    doc.font('Helvetica-Bold').fontSize(24).fillColor(white)
+      .text('SHIVBAEMPIRE', 0, 22, { align: 'center', width: W });
 
-    doc.font('Helvetica').fontSize(9).fillColor('#6B7280')
-      .text('Mandal Management Platform', { align: 'center' });
+    doc.font('Helvetica').fontSize(11).fillColor(white)
+      .text('Shivba Tarun Mitra Mandal', 0, 52, { align: 'center', width: W });
 
-    // Divider
-    doc.moveTo(50, 130).lineTo(545, 130).stroke(borderColor);
+    doc.font('Helvetica').fontSize(9).fillColor('#FFE0B2')
+      .text('Mandal Management Platform', 0, 69, { align: 'center', width: W });
 
-    // Receipt title
-    doc.font('Helvetica-Bold').fontSize(14).fillColor(primaryColor)
-      .text('DONATION RECEIPT', 50, 148, { align: 'center' });
+    // ── RECEIPT TITLE BANNER ─────────────────────────────────
+    doc.rect(0, 130, W, 44).fill(darkBlue);
 
-    // Receipt number box
-    doc.roundedRect(350, 140, 195, 40, 4).stroke(borderColor);
-    doc.font('Helvetica').fontSize(8).fillColor('#6B7280')
-      .text('Receipt No.', 360, 147);
-    doc.font('Helvetica-Bold').fontSize(11).fillColor(primaryColor)
-      .text(receipt.receipt_number, 360, 158);
+    doc.font('Helvetica-Bold').fontSize(16).fillColor(white)
+      .text('DONATION RECEIPT', 0, 144, { align: 'center', width: W });
 
-    // Event name
-    doc.font('Helvetica').fontSize(10).fillColor('#6B7280')
-      .text(`Event: ${receipt.event_name || 'N/A'}`, 50, 155);
+    // ── RECEIPT NO BOX (top-right) ───────────────────────────
+    doc.roundedRect(W - 195, 180, 175, 52, 6)
+       .lineWidth(1.5).strokeColor(saffron).stroke();
+    doc.font('Helvetica').fontSize(8).fillColor(textGray)
+      .text('Receipt No.', W - 190, 186);
+    doc.font('Helvetica-Bold').fontSize(13).fillColor(darkBlue)
+      .text(receipt.receipt_number, W - 190, 200);
 
-    doc.moveTo(50, 195).lineTo(545, 195).stroke(borderColor);
+    // Event badge
+    doc.roundedRect(30, 185, W - 250, 40, 5).fill(lightGray);
+    doc.font('Helvetica').fontSize(8).fillColor(textGray).text('Event', 42, 190);
+    doc.font('Helvetica-Bold').fontSize(11).fillColor(darkBlue)
+      .text(receipt.event_name || 'N/A', 42, 202);
 
-    // Donor details
-    let y = 215;
-    const labelColor = '#6B7280';
-    const valueColor = '#111827';
+    // ── DIVIDER ──────────────────────────────────────────────
+    let y = 248;
+    doc.moveTo(30, y).lineTo(W - 30, y).lineWidth(0.5).strokeColor(midGray).stroke();
+    y += 14;
 
-    const addRow = (label, value, left = 50, right = 350) => {
-      doc.font('Helvetica').fontSize(9).fillColor(labelColor).text(label, left, y);
-      doc.font('Helvetica-Bold').fontSize(10).fillColor(valueColor).text(String(value || 'N/A'), left, y + 12);
-      y += 40;
+    // ── DONOR SECTION TITLE ──────────────────────────────────
+    doc.rect(30, y, W - 60, 22).fill(darkBlue);
+    doc.font('Helvetica-Bold').fontSize(9).fillColor(white)
+      .text('  DONOR INFORMATION', 30, y + 6);
+    y += 30;
+
+    // Helper functions
+    const fieldLabel = (label, x, fy) => {
+      doc.font('Helvetica').fontSize(8).fillColor(textGray).text(label, x, fy);
+    };
+    const fieldValue = (value, x, fy, opts = {}) => {
+      doc.font('Helvetica-Bold').fontSize(10.5).fillColor(textDark)
+        .text(String(value || '—'), x, fy + 11, opts);
     };
 
-    const addTwoCol = (l1, v1, l2, v2) => {
-      doc.font('Helvetica').fontSize(9).fillColor(labelColor).text(l1, 50, y);
-      doc.font('Helvetica-Bold').fontSize(10).fillColor(valueColor).text(String(v1 || 'N/A'), 50, y + 12);
-      doc.font('Helvetica').fontSize(9).fillColor(labelColor).text(l2, 300, y);
-      doc.font('Helvetica-Bold').fontSize(10).fillColor(valueColor).text(String(v2 || 'N/A'), 300, y + 12);
-      y += 40;
-    };
+    // Row 1 — Name (full width)
+    fieldLabel('Donor Name', 30, y);
+    fieldValue(receipt.donor_name, 30, y, { width: W - 60 });
+    y += 36;
 
-    addRow('Donor Name', receipt.donor_name);
-    addTwoCol('Mobile Number', receipt.donor_mobile, 'Village', receipt.village_name);
-    if (receipt.address) { addRow('Address', receipt.address); }
+    // Row 2 — Mobile | Village
+    fieldLabel('Mobile Number', 30, y);
+    fieldLabel('Village', W / 2 + 10, y);
+    fieldValue(receipt.donor_mobile || '—', 30, y);
+    fieldValue(receipt.village_name || '—', W / 2 + 10, y);
+    y += 36;
 
-    doc.moveTo(50, y).lineTo(545, y).stroke(borderColor);
-    y += 15;
-
-    // Amount section
-    doc.rect(50, y, 495, 70).fill('#F8F9FA');
-    doc.font('Helvetica').fontSize(9).fillColor(labelColor).text('Amount Received', 65, y + 8);
-    doc.font('Helvetica-Bold').fontSize(22).fillColor('#111827')
-      .text(formatCurrency(receipt.amount), 65, y + 20);
-    doc.font('Helvetica').fontSize(9).fillColor(labelColor)
-      .text(`In Words: ${receipt.amount_in_words || amountToWords(receipt.amount)}`, 65, y + 52);
-    y += 90;
-
-    addTwoCol('Payment Mode', receipt.payment_mode.replace('_', ' '),
-              'Collection Date', new Date(receipt.collection_date).toLocaleDateString('en-IN'));
-
-    if (receipt.transaction_id) {
-      addRow('Transaction ID', receipt.transaction_id);
+    if (receipt.address) {
+      fieldLabel('Address', 30, y);
+      fieldValue(receipt.address, 30, y, { width: W - 60 });
+      y += 36;
     }
 
-    addRow('Collected By', receipt.collector_name);
+    y += 2;
+    doc.moveTo(30, y).lineTo(W - 30, y).lineWidth(0.5).strokeColor(midGray).stroke();
+    y += 14;
 
-    doc.moveTo(50, y).lineTo(545, y).stroke(borderColor);
-    y += 25;
+    // ── AMOUNT SECTION ───────────────────────────────────────
+    doc.rect(30, y, W - 60, 76).fill('#FFF8E1');
+    doc.rect(30, y, 6, 76).fill(gold);
+
+    doc.font('Helvetica').fontSize(9).fillColor(textGray)
+      .text('Amount Received', 48, y + 8);
+
+    const amtStr = `RS. ${parseFloat(receipt.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+    doc.font('Helvetica-Bold').fontSize(26).fillColor(saffron)
+      .text(amtStr, 48, y + 20);
+
+    doc.font('Helvetica').fontSize(9).fillColor(textGray)
+      .text(`In Words: `, 48, y + 56, { continued: true });
+    doc.font('Helvetica-Bold').fontSize(9).fillColor(textDark)
+      .text(receipt.amount_in_words || amountToWords(receipt.amount), { width: W - 100 });
+
+    y += 92;
+
+    // ── PAYMENT DETAILS ──────────────────────────────────────
+    doc.rect(30, y, W - 60, 22).fill(darkBlue);
+    doc.font('Helvetica-Bold').fontSize(9).fillColor(white)
+      .text('  PAYMENT DETAILS', 30, y + 6);
+    y += 30;
+
+    // Row — Mode | Date | Collector
+    const colW = (W - 60) / 3;
+    fieldLabel('Payment Mode', 30, y);
+    fieldLabel('Collection Date', 30 + colW, y);
+    fieldLabel('Collector', 30 + colW * 2, y);
+
+    doc.font('Helvetica-Bold').fontSize(10.5).fillColor(darkBlue)
+      .text((receipt.payment_mode || '—').replace('_', ' '), 30, y + 11);
+    doc.font('Helvetica-Bold').fontSize(10.5).fillColor(textDark)
+      .text(new Date(receipt.collection_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }), 30 + colW, y + 11);
+    doc.font('Helvetica-Bold').fontSize(10.5).fillColor(textDark)
+      .text(receipt.collector_name || '—', 30 + colW * 2, y + 11, { width: colW - 10 });
+    y += 42;
+
+    if (receipt.transaction_id) {
+      fieldLabel('Transaction ID / Ref', 30, y);
+      fieldValue(receipt.transaction_id, 30, y);
+      y += 36;
+    }
+
+    y += 4;
+    doc.moveTo(30, y).lineTo(W - 30, y).lineWidth(0.5).strokeColor(midGray).stroke();
+    y += 20;
+
+    // ── SIGNATURE + QR ───────────────────────────────────────
+    const sigX = 30;
+    const qrX  = W - 140;
+    const bottomY = y;
 
     // QR Code
     if (receipt.qr_code_data) {
       try {
         const qrBase64 = receipt.qr_code_data.split(',')[1];
         const qrBuffer = Buffer.from(qrBase64, 'base64');
-        doc.image(qrBuffer, 50, y, { width: 80, height: 80 });
-        doc.font('Helvetica').fontSize(7).fillColor(labelColor)
-          .text('Scan to verify', 50, y + 82, { width: 80, align: 'center' });
+        doc.image(qrBuffer, qrX, bottomY, { width: 90, height: 90 });
+        doc.font('Helvetica').fontSize(7).fillColor(textGray)
+          .text('Scan to Verify', qrX, bottomY + 93, { width: 90, align: 'center' });
       } catch {}
     }
 
-    // Signature area
-    doc.font('Helvetica').fontSize(9).fillColor(labelColor)
-      .text('Authorized Signature', 400, y + 50);
-    doc.moveTo(380, y + 75).lineTo(540, y + 75).stroke(borderColor);
+    // Digital Signature
+    const path = require('path');
+    const sigPath = path.join(__dirname, '../assets/signature.jpg');
+    const fs = require('fs');
+    if (fs.existsSync(sigPath)) {
+      doc.image(sigPath, sigX, bottomY, { width: 150, height: 55, fit: [150, 55] });
+    }
+    // Signature line
+    doc.moveTo(sigX, bottomY + 62).lineTo(sigX + 160, bottomY + 62)
+       .lineWidth(0.8).strokeColor(midGray).stroke();
+    doc.font('Helvetica-Bold').fontSize(8.5).fillColor(darkBlue)
+      .text('Shivba Tarun Mitra Mandal', sigX, bottomY + 66, { width: 180 });
+    doc.font('Helvetica').fontSize(7.5).fillColor(textGray)
+      .text('Authorized Signatory', sigX, bottomY + 79);
 
-    y += 110;
-
-    // Footer
-    doc.font('Helvetica').fontSize(8).fillColor('#9CA3AF')
-      .text('This is a computer generated receipt. SHIVBAEMPIRE — Shivba Tarun Mitra Mandal', 50, y, { align: 'center' });
+    // ── FOOTER ───────────────────────────────────────────────
+    const footerY = H - 42;
+    doc.rect(0, footerY, W, 42).fill(darkBlue);
+    doc.font('Helvetica').fontSize(8).fillColor('#90CAF9')
+      .text(
+        'This is an official computer generated donation receipt.',
+        0, footerY + 10, { align: 'center', width: W }
+      );
+    doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#FFFFFF')
+      .text('Shivba Tarun Mitra Mandal  |  SHIVBAEMPIRE Platform', 0, footerY + 23, { align: 'center', width: W });
 
     doc.end();
   } catch (err) {
@@ -273,3 +346,4 @@ const downloadReceiptPdf = async (req, res, next) => {
 };
 
 module.exports = { getReceipts, getReceiptById, verifyReceipt, downloadReceiptPdf };
+
