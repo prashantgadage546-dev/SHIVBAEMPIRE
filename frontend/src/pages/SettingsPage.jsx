@@ -86,6 +86,35 @@ export default function SettingsPage() {
         )}
       </div>
 
+      <div className="card p-6 border border-red-200 bg-red-50/30">
+        <h2 className="font-semibold text-red-900 mb-2 flex items-center gap-2">
+          🗑️ Data Reset Zone (सर्व डेटा क्लियर करा)
+        </h2>
+        <p className="text-xs text-red-700 mb-4">
+          सर्व टेस्ट वर्गण्या (Collections), पावती डेटा (Receipts), देणगीदार (Donors) आणि खर्च (Expenses) पूर्णपणे साफ करा जेणेकरून नवीन सिस्टीम चालू करता येईल.
+        </p>
+        <button
+          type="button"
+          onClick={async () => {
+            const pwd = prompt('डेटा पूर्णपणे क्लिअर करण्यासाठी Password टाका (45):');
+            if (pwd === '45') {
+              try {
+                await api.post('/settings/reset-all-data');
+                toast.success('सर्व डेटा यशस्वीरीत्या क्लियर झाला! डॅशबोर्ड 0 झाला आहे.');
+                setTimeout(() => window.location.reload(), 1500);
+              } catch {
+                toast.error('डेटा क्लियर करण्यात त्रुटी आली.');
+              }
+            } else if (pwd !== null) {
+              toast.error('चुकीचा Password!');
+            }
+          }}
+          className="btn btn-danger text-xs"
+        >
+          🗑️ Clear All Test Data (डेटा पूर्ण क्लिअर करा)
+        </button>
+      </div>
+
       <div className="card p-6">
         <h2 className="font-semibold text-gray-900 mb-4">Application Info</h2>
         <div className="space-y-3 text-sm">

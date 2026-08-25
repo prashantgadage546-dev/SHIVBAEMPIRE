@@ -30,4 +30,21 @@ router.put('/', authenticate, requireAdmin, async (req, res, next) => {
   }
 });
 
+router.post('/reset-all-data', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    await pool.execute('DELETE FROM collections');
+    await pool.execute('DELETE FROM receipts');
+    await pool.execute('DELETE FROM donors');
+    await pool.execute('DELETE FROM expenses');
+    await pool.execute('DELETE FROM activity_logs');
+    try {
+      await pool.execute('UPDATE receipt_sequences SET last_number = 0');
+    } catch {}
+
+    res.json({ success: true, message: 'All test collections, donors, receipts, and expenses have been completely cleared.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;
