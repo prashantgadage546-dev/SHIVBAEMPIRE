@@ -110,18 +110,13 @@ export const generateWhatsAppUrl = (mobile, message) => {
  */
 export const generateReceiptWhatsAppMessage = ({ donorName, amount, eventName, receiptNumber, paymentMode, date, verifyUrl }) => {
   const modeText = paymentMode === 'CASH' ? 'नगद (Cash)' : 'ऑनलाइन (Online)';
-  return `जय शिवराय! 🙏🚩
-
-जय छत्रपती! शिवबा तरुण मित्र मंडळ (SHIVBAEMPIRE) आयोजित ${eventName || 'यात्रा / उत्सव'} साठी आपली वर्गणी यशस्वीरित्या जमा झाली आहे.
+  return `शिवबा तरुण मित्र मंडळ (SHIVBAEMPIRE) आयोजित ${eventName || 'यात्रा / उत्सव'} साठी आपली वर्गणी यशस्वीरित्या जमा झाली आहे.
 
 👤 देणगीदाराचे नाव: ${donorName}
 💰 जमा वर्गणी रक्कम: ${formatCurrency(amount)}
 🧾 पावती क्रमांक: ${receiptNumber}
 💳 भरणा प्रकार: ${modeText}
 📅 जमा तारीख: ${formatDate(date)}
-
-🔗 तुमची डिजिटल पावती येथे पाहा आणि डाऊनलोड करा:
-${verifyUrl}
 
 आपल्या बहुमूल्य सहकार्याबद्दल मनापासून आभार! 💐
 
