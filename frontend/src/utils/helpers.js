@@ -118,6 +118,9 @@ export const generateReceiptWhatsAppMessage = ({ donorName, amount, eventName, r
 💳 भरणा प्रकार: ${modeText}
 📅 जमा तारीख: ${formatDate(date)}
 
+📄 पावती डाऊनलोड करा (PDF):
+${verifyUrl}
+
 आपल्या बहुमूल्य सहकार्याबद्दल मनापासून आभार! 💐
 
 — शिवबा तरुण मित्र मंडळ (SHIVBAEMPIRE)`;
