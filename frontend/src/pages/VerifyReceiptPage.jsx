@@ -3,17 +3,26 @@
 // With PDF Download button for donors
 // =============================================================
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { CheckCircle2, XCircle, Loader2, Shield, Download } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { CheckCircle2, XCircle, Loader2, Shield, Download, ArrowLeft, Home } from 'lucide-react';
 import api from '../services/api';
 import { formatCurrency, formatDate, formatPaymentMode } from '../utils/helpers';
 
 export default function VerifyReceiptPage() {
   const { receiptNumber } = useParams();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [downloading, setDownloading] = useState(false);
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      navigate('/');
+    }
+  };
 
   useEffect(() => {
     api.get(`/receipts/verify/${receiptNumber}`)
@@ -44,12 +53,31 @@ export default function VerifyReceiptPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-md">
+
+        {/* Top Navigation Bar */}
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-100 transition-all text-xs font-semibold shadow-sm"
+          >
+            <ArrowLeft size={16} />
+            मागे जा (Go Back)
+          </button>
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all text-xs font-semibold shadow-sm"
+          >
+            <Home size={16} />
+            मुख्य डॅशबोर्ड (Home)
+          </button>
+        </div>
+
         {/* Branding */}
-        <div className="text-center mb-8">
-          <div className="text-2xl font-bold text-gray-900">SHIVBAEMPIRE</div>
-          <div className="text-gray-500 text-sm">Shivba Tarun Mitra Mandal</div>
+        <div className="text-center mb-6">
+          <div className="text-2xl font-extrabold text-gray-900 tracking-tight">SHIVBAEMPIRE</div>
+          <div className="text-gray-500 text-xs mt-0.5">Shivba Tarun Mitra Mandal</div>
         </div>
 
         {loading ? (
