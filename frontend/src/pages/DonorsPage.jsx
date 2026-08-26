@@ -301,8 +301,8 @@ export default function DonorsPage() {
                 <tr>
                   <td colSpan={6} className="text-center py-12 text-gray-400">
                     <Users size={40} className="mx-auto mb-3 text-gray-200" />
-                    <div className="font-medium">No donors found</div>
-                    <div className="text-sm mt-1">Add a donor to get started</div>
+                    <div className="font-medium">{t('noDonorsFound')}</div>
+                    <div className="text-sm mt-1">{t('addDonorToStart')}</div>
                   </td>
                 </tr>
               ) : donors.map(donor => (
@@ -376,11 +376,11 @@ export default function DonorsPage() {
         <div className="modal-overlay">
           <div className="modal-content max-w-sm p-6 text-center">
             <AlertTriangle size={40} className="text-red-500 mx-auto mb-4" />
-            <h3 className="font-semibold text-gray-900">Delete Donor?</h3>
+            <h3 className="font-semibold text-gray-900">{t('deleteDonorConfirm')}</h3>
             <p className="text-gray-500 text-sm mt-2"><strong>{deleteConfirm.full_name}</strong> ({deleteConfirm.donor_code})</p>
             <div className="flex gap-3 mt-6 justify-center">
-              <button onClick={() => setDeleteConfirm(null)} className="btn btn-secondary">Cancel</button>
-              <button onClick={() => handleDelete(deleteConfirm)} className="btn btn-danger">Delete</button>
+              <button onClick={() => setDeleteConfirm(null)} className="btn btn-secondary">{t('cancel')}</button>
+              <button onClick={() => handleDelete(deleteConfirm)} className="btn btn-danger">{t('delete')}</button>
             </div>
           </div>
         </div>

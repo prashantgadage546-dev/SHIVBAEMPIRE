@@ -1,26 +1,17 @@
 // =============================================================
-// SHIVBAEMPIRE — Reports Page (All Report Types)
+// SHIVBAEMPIRE — Reports Page (All Report Types) — Marathi + English
 // =============================================================
 import { useState, useEffect } from 'react';
 import { FileBarChart, Download, BarChart3, Users, MapPin, Calendar, UserCheck, TrendingDown, Clock, AlertTriangle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import api from '../services/api';
 import { formatCurrency, formatDate, formatPaymentMode, getStatusBadgeClass, formatStatus } from '../utils/helpers';
-
-const REPORT_TYPES = [
-  { id: 'collections', label: 'Collection Report', icon: BarChart3 },
-  { id: 'expenses', label: 'Expense Report', icon: TrendingDown },
-  { id: 'daily', label: 'Daily Collection', icon: Calendar },
-  { id: 'monthly', label: 'Monthly Collection', icon: Clock },
-  { id: 'collector-wise', label: 'Collector-wise', icon: UserCheck },
-  { id: 'village-wise', label: 'Village-wise', icon: MapPin },
-  { id: 'pending', label: 'Pending Donations', icon: AlertTriangle },
-  { id: 'final', label: 'Final Yatra Report', icon: FileBarChart },
-];
+import { useLanguage } from '../context/LanguageContext';
 
 const COLORS = ['#1F2937', '#374151', '#6B7280', '#9CA3AF', '#D1D5DB'];
 
 export default function ReportsPage() {
+  const { t } = useLanguage();
   const [activeReport, setActiveReport] = useState('collections');
   const [reportData, setReportData] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -30,6 +21,18 @@ export default function ReportsPage() {
   const [selectedEvent, setSelectedEvent] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+
+  // Report type labels use t() for Marathi/English
+  const REPORT_TYPES = [
+    { id: 'collections', labelKey: 'rptCollection', icon: BarChart3 },
+    { id: 'expenses', labelKey: 'rptExpenses', icon: TrendingDown },
+    { id: 'daily', labelKey: 'rptDaily', icon: Calendar },
+    { id: 'monthly', labelKey: 'rptMonthly', icon: Clock },
+    { id: 'collector-wise', labelKey: 'rptCollectorWise', icon: UserCheck },
+    { id: 'village-wise', labelKey: 'rptVillageWise', icon: MapPin },
+    { id: 'pending', labelKey: 'rptPending', icon: AlertTriangle },
+    { id: 'final', labelKey: 'rptFinal', icon: FileBarChart },
+  ];
 
   useEffect(() => {
     api.get('/events').then(r => {
@@ -91,19 +94,19 @@ export default function ReportsPage() {
     <div className="space-y-6">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Reports</h1>
-          <p className="page-subtitle">Financial & operational reports</p>
+          <h1 className="page-title">{t('reportsTitle')}</h1>
+          <p className="page-subtitle">{t('reportsSubtitle')}</p>
         </div>
         <div className="flex gap-3">
           <button onClick={exportCSV} className="btn btn-secondary btn-sm">
-            <Download size={14} /> Export CSV
+            <Download size={14} /> {t('exportCSV')}
           </button>
         </div>
       </div>
 
       {/* Report type selector */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
-        {REPORT_TYPES.map(({ id, label, icon: Icon }) => (
+        {REPORT_TYPES.map(({ id, labelKey, icon: Icon }) => (
           <button
             key={id}
             onClick={() => setActiveReport(id)}
@@ -114,7 +117,7 @@ export default function ReportsPage() {
             }`}
           >
             <Icon size={16} />
-            {label}
+            {t(labelKey)}
           </button>
         ))}
       </div>
@@ -122,27 +125,27 @@ export default function ReportsPage() {
       {/* Filters */}
       <div className="card p-4 flex flex-wrap gap-3">
         <select className="form-input w-full sm:w-48 text-sm" value={selectedEvent} onChange={e => setSelectedEvent(e.target.value)}>
-          <option value="">All Events</option>
+          <option value="">{t('allEvents')}</option>
           {events.map(ev => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
         </select>
-        <input type="date" className="form-input w-full sm:w-40 text-sm" value={dateFrom} onChange={e => setDateFrom(e.target.value)} placeholder="From" />
-        <input type="date" className="form-input w-full sm:w-40 text-sm" value={dateTo} onChange={e => setDateTo(e.target.value)} placeholder="To" />
-        <button onClick={fetchReport} className="btn btn-primary btn-sm">Generate Report</button>
+        <input type="date" className="form-input w-full sm:w-40 text-sm" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+        <input type="date" className="form-input w-full sm:w-40 text-sm" value={dateTo} onChange={e => setDateTo(e.target.value)} />
+        <button onClick={fetchReport} className="btn btn-primary btn-sm">{t('generateReport')}</button>
       </div>
 
       {/* Report content */}
       {loading ? (
         <div className="card p-8"><div className="skeleton h-64 w-full rounded" /></div>
       ) : finalReport ? (
-        <FinalReportView report={finalReport} />
+        <FinalReportView report={finalReport} t={t} />
       ) : (
-        <ReportTable type={activeReport} data={reportData} summary={summary} />
+        <ReportTable type={activeReport} data={reportData} summary={summary} t={t} />
       )}
     </div>
   );
 }
 
-function FinalReportView({ report }) {
+function FinalReportView({ report, t }) {
   const { event, summary, expensesByCategory, collectorWise, villageWise } = report;
   return (
     <div className="space-y-6">
@@ -150,16 +153,16 @@ function FinalReportView({ report }) {
         <div className="text-center mb-6 pb-6 border-b border-gray-100">
           <div className="text-2xl font-bold text-gray-900">SHIVBAEMPIRE</div>
           <div className="text-gray-500">Shivba Tarun Mitra Mandal</div>
-          <div className="text-lg font-semibold text-gray-800 mt-3">{event?.name} — Final Financial Report</div>
+          <div className="text-lg font-semibold text-gray-800 mt-3">{event?.name} — {t('rptFinal')}</div>
           {event?.event_date && <div className="text-sm text-gray-500">{formatDate(event.event_date)}</div>}
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
-            { label: 'Total Donors', value: summary.totalDonors },
-            { label: 'Total Income', value: formatCurrency(summary.totalIncome) },
-            { label: 'Total Expenses', value: formatCurrency(summary.totalExpenses) },
-            { label: 'Balance', value: formatCurrency(summary.remainingBalance) },
+            { label: t('totalDonors'), value: summary.totalDonors },
+            { label: t('totalCollection'), value: formatCurrency(summary.totalIncome) },
+            { label: t('totalExpenses'), value: formatCurrency(summary.totalExpenses) },
+            { label: t('remainingBalance'), value: formatCurrency(summary.remainingBalance) },
           ].map(({ label, value }) => (
             <div key={label} className="text-center p-4 bg-gray-50 rounded-lg">
               <div className="text-xs text-gray-500 uppercase tracking-wide">{label}</div>
@@ -170,7 +173,7 @@ function FinalReportView({ report }) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h3 className="font-semibold text-gray-900 mb-3">Expenses by Category</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">{t('totalExpenses')}</h3>
             <div className="space-y-2">
               {expensesByCategory.map(e => (
                 <div key={e.category} className="flex justify-between text-sm">
@@ -181,7 +184,7 @@ function FinalReportView({ report }) {
             </div>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 mb-3">Collector-wise Collection</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">{t('rptCollectorWise')}</h3>
             <div className="space-y-2">
               {collectorWise.map(c => (
                 <div key={c.collector} className="flex justify-between text-sm">
@@ -197,13 +200,13 @@ function FinalReportView({ report }) {
   );
 }
 
-function ReportTable({ type, data, summary }) {
+function ReportTable({ type, data, summary, t }) {
   if (!data.length) {
     return (
       <div className="card p-12 text-center text-gray-400">
         <FileBarChart size={48} className="mx-auto mb-4 text-gray-200" />
-        <div className="font-medium">No data available</div>
-        <div className="text-sm mt-1">Try adjusting filters or date range</div>
+        <div className="font-medium">{t('noDataAvail')}</div>
+        <div className="text-sm mt-1">{t('adjustFilters')}</div>
       </div>
     );
   }

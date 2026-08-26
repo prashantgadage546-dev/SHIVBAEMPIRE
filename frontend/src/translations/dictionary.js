@@ -84,6 +84,39 @@ export const translations = {
     cashShort: 'Cash',
     onlineShort: 'Online',
 
+    // Dashboard - extra
+    todaysCollection: "TODAY'S COLLECTION",
+    pendingDonors: 'PENDING DONORS',
+    pendingAmount: 'PENDING AMOUNT',
+    thisMonthCollection: 'THIS MONTH',
+
+    // Reports Page
+    reportsTitle: 'Reports',
+    reportsSubtitle: 'Financial & operational reports',
+    exportCSV: 'Export CSV',
+    allEvents: 'All Events',
+    generateReport: 'Generate Report',
+    noDataAvail: 'No data available',
+    adjustFilters: 'Try adjusting filters or date range',
+    rptCollection: 'Collection Report',
+    rptExpenses: 'Expense Report',
+    rptDaily: 'Daily Collection',
+    rptMonthly: 'Monthly Collection',
+    rptCollectorWise: 'Collector-wise',
+    rptVillageWise: 'Village-wise',
+    rptPending: 'Pending Donations',
+    rptFinal: 'Final Yatra Report',
+    collectionTarget: 'Collection Target',
+    remaining: 'remaining',
+
+    // Settings
+    settingsTitle: 'Settings',
+    settingsSubtitle: 'Application configuration',
+    orgSettings: 'Organization Settings',
+    appInfo: 'Application Info',
+    saveSettings: 'Save Settings',
+    savingSettings: 'Saving...',
+
     // Common
     administrator: 'Administrator',
     active: 'Active',
@@ -172,6 +205,39 @@ export const translations = {
     online: 'ऑनलाइन (Online/UPI)',
     cashShort: 'नगद',
     onlineShort: 'ऑनलाइन',
+
+    // Dashboard - extra
+    todaysCollection: 'आजची जमा वर्गणी',
+    pendingDonors: 'प्रलंबित देणगीदार',
+    pendingAmount: 'प्रलंबित रक्कम',
+    thisMonthCollection: 'या महिन्याची जमा',
+
+    // Reports Page
+    reportsTitle: 'अहवाल / रिपोर्ट्स',
+    reportsSubtitle: 'आर्थिक व कार्यात्मक अहवाल',
+    exportCSV: 'CSV डाऊनलोड',
+    allEvents: 'सर्व कार्यक्रम',
+    generateReport: 'अहवाल तयार करा',
+    noDataAvail: 'माहिती उपलब्ध नाही',
+    adjustFilters: 'फिल्टर किंवा तारीख बदलून पाहा',
+    rptCollection: 'वर्गणी अहवाल',
+    rptExpenses: 'खर्च अहवाल',
+    rptDaily: 'दैनंदिन जमा',
+    rptMonthly: 'मासिक जमा',
+    rptCollectorWise: 'कार्यकर्त्यांनुसार',
+    rptVillageWise: 'गावनुसार',
+    rptPending: 'प्रलंबित देणग्या',
+    rptFinal: 'अंतिम यात्रा अहवाल',
+    collectionTarget: 'वर्गणी लक्ष्य',
+    remaining: 'शिल्लक',
+
+    // Settings
+    settingsTitle: 'सेटिंग्ज',
+    settingsSubtitle: 'अर्जाचे कॉन्फिगरेशन',
+    orgSettings: 'संस्था सेटिंग्ज',
+    appInfo: 'अर्जाची माहिती',
+    saveSettings: 'सेटिंग्ज जतन करा',
+    savingSettings: 'जतन होत आहे...',
 
     // Common
     administrator: 'प्रशासक (Admin)',

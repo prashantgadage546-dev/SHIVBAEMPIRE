@@ -158,20 +158,20 @@ export default function DashboardPage() {
           loading={loading}
         />
         <KPICard
-          title="This Month"
+          title={t('thisMonthCollection')}
           value={loading ? '' : formatCurrency(data?.monthCollection)}
           icon={Clock}
           loading={loading}
         />
         <KPICard
-          title="Pending Donors"
+          title={t('pendingDonors')}
           value={loading ? '' : formatNumber(data?.pendingDonors)}
           subtitle={`${formatNumber(data?.partialDonors)} partial`}
           icon={Users}
           loading={loading}
         />
         <KPICard
-          title="Pending Amount"
+          title={t('pendingAmount')}
           value={loading ? '' : formatCurrency(data?.totalPending)}
           icon={TrendingUp}
           loading={loading}
@@ -185,7 +185,7 @@ export default function DashboardPage() {
             <div>
               <h2 className="font-semibold text-gray-900 flex items-center gap-2">
                 <Target size={18} />
-                Collection Target
+                {t('collectionTarget')}
               </h2>
               <p className="text-sm text-gray-500 mt-0.5">
                 {formatCurrency(data.targetCollected)} of {formatCurrency(data.targetAmount)}
@@ -194,7 +194,7 @@ export default function DashboardPage() {
             <div className="text-right">
               <div className="text-3xl font-bold text-gray-900">{data.targetPercentage}%</div>
               <div className="text-xs text-gray-500">
-                {formatCurrency(data.targetRemaining)} remaining
+                {formatCurrency(data.targetRemaining)} {t('remaining')}
               </div>
             </div>
           </div>
@@ -214,7 +214,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-gray-900 flex items-center gap-2">
               <PieIcon size={18} className="text-blue-600" />
-              Collection by Payment Mode
+              {t('collectorWise')}
             </h2>
             <span className="text-xs font-semibold px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full">
               {paymentModeData.length} Modes
@@ -289,7 +289,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-gray-900 flex items-center gap-2">
               <Award size={18} className="text-amber-500" />
-              Top Collectors
+              {t('collectorWise')}
             </h2>
             <span className="text-xs font-semibold px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full">
               Rankings
